@@ -1,0 +1,41 @@
+#define _CRT_SECURE_NO_WARNINGS
+#include<stdio.h>
+#include<stdlib.h>
+#include<string.h>
+#define MAXSIZE 100
+int main(){
+    char T[MAXSIZE];
+    char S[MAXSIZE];
+    int SLEN;
+    int TLEN;
+    int i=0;
+    int j=0;
+    printf("请输入主串：");
+    scanf("%s",S);
+    printf("请输入子串：");
+    scanf("%s",T);
+    SLEN=strlen(S);
+    TLEN=strlen(T);
+    if(TLEN>SLEN){
+        printf("子串比主串长\n");
+    }
+    else{
+        while(T[j]!='\0'&&S[i]!=0){
+            if(S[i]==T[j]){
+                i++;
+                j++;
+            }
+            else{
+                i=i-(j-1);
+                j=0;
+            }
+        }
+        if(T[j]!='\0'){
+            printf("该主串与该子串不匹配\n");
+        }
+        else{
+        printf("子串串长为：%d，子串在主串的位置为：%d\n",j,i-j+1);
+        }
+    }
+    return 0;
+}
