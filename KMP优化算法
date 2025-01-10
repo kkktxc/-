@@ -1,0 +1,86 @@
+#include<stdio.h>
+#include<string.h>
+
+#define OK 1
+#define ERROR 0
+#define MAXSIZE 100
+
+typedef int Stauts;
+typedef char String[MAXSIZE+1];
+
+Stauts strAssign(String T,char* c);
+void getnextval(String T,int* nextval);
+int indexKMP2(String S,String T,int pos);
+int main(){
+    String S,T;
+    int index;
+    strAssign(S,"ABABABAABABAAABABAA");
+    strAssign(T,"ABABAAABABAA");
+    index=indexKMP2(S,T,1);
+    printf("%d\n",index);
+
+    return 0;
+}
+
+//串改模式串
+Stauts strAssign(String T,char* c){
+    if(strlen(c)>MAXSIZE){
+        return ERROR;
+    }
+    else{
+        int i;
+        T[0]=strlen(c);
+        for(i=0;i<T[0];i++){
+            T[i+1]=c[i];
+        }
+        return OK;
+    }
+}
+
+//获取nextval
+void getnextval(String T,int* nextval){
+    int i,k;
+    i=1;
+    k=0;
+    nextval[i]=k;
+    while(i<T[0]){
+        if(k==0||T[i]==T[k]){
+            i++;
+            k++;
+            if(T[i]!=T[k]){
+                nextval[i]=k;
+            }
+            else{
+                nextval[i]=nextval[k];
+            }
+        }
+        else{
+            k=nextval[k];
+        }
+    }
+}
+
+//KMP2
+int indexKMP2(String S,String T,int pos){
+    int i,j;
+    int nextval[MAXSIZE];
+    i=pos;
+    j=1;
+    getnextval(T,nextval);
+    while(i<=S[0]&&j<=T[0]){
+        if(j==0||S[i]==T[j]){
+            i++;
+            j++;
+        }
+        else{
+            j=nextval[j];
+        }
+    }
+    if(j>T[0]){
+        return i-T[0];
+    }
+    else{
+        return 0;
+    }
+}
+//KMP优化算法
