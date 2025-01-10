@@ -1,0 +1,86 @@
+#include<stdio.h>
+#include<string.h>
+#include<stdlib.h>
+
+#define OK 1
+#define ERROR 0
+#define TRUE 1
+#define FALSE 0
+#define MAXSIZE 100
+
+typedef int Stauts;
+typedef int Elemtype;
+
+typedef char String[MAXSIZE+1];
+
+Stauts modstring(String T,char* c);
+void getNext(String T,int* next);
+int indexKMP(String S,String T,int pos);
+int main(){
+    String T;
+    String S;
+    int index;
+    
+    modstring(T,"ABABAAABABAA");
+    modstring(S,"ABABABAABABAAABABAA");
+    index=indexKMP(S,T,1);
+    printf("%d\n",index);
+
+    return 0;
+}
+
+//将字符串改为模式串
+Stauts modstring(String T,char* c){
+    int i;
+    if(strlen(c)>MAXSIZE){
+        return ERROR;
+    }
+    else{
+        T[0]=strlen(c);
+        for(i=0;i<T[0];i++){
+            T[i+1]=c[i];
+        }
+        return OK;
+    }
+}
+
+//获取模式串的next数组
+void getNext(String T,int* next){
+    int i,k;
+    i=1;
+    k=0;
+    next[i]=k;
+    while(i<T[0]){
+        if(k==0||T[i]==T[k]){
+            i++;
+            k++;
+            next[i]=k;
+        }
+        else{
+            k=next[k];
+        }
+    }
+}
+
+//KMP
+int indexKMP(String S,String T,int pos){
+    int i=pos;
+    int j=1;
+    int next[MAXSIZE+1];
+    getNext(T,next);
+    while(i<=S[0]&&j<=T[0]){
+        if(j==0||S[i]==T[j]){
+            i++;
+            j++;
+        }
+        else{
+            j=next[j];
+        }
+    }
+    if(j>T[0]){
+        return i-T[0];
+    }
+    else{
+        return 0;
+    }
+}
