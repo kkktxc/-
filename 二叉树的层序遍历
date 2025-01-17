@@ -1,0 +1,99 @@
+#include<stdio.h>
+#include<stdlib.h>
+#include<string.h>
+#define MAXSIZE 100
+typedef char elemtype1;
+typedef struct treeNode treeNode;
+struct treeNode{
+    elemtype1 data;
+    treeNode* ltreeNode;
+    treeNode* rtreeNode;
+};
+typedef treeNode* biTree;
+char* expr;
+typedef biTree elemtype2;
+typedef struct queue{
+    elemtype2* data;
+    int front;
+    int rear;
+}queue;
+
+void createTree(biTree* T);//创建树
+queue* queueInit();//初始化队列
+int queueSize(queue* q);//测量队列长度
+int equeue(queue* q,elemtype2 t);//入队
+int dequeue(queue* q,elemtype2* t);//出队
+int levelOrder(biTree T);//层序遍历，返回MAXDepth
+int main(){
+	int MAXDepth;
+	biTree T;
+    expr="ABDG##H##E#I##CF###";
+	
+	createTree(&T);
+	MAXDepth=levelOrder(T);
+	printf("\n%d\n",MAXDepth);
+
+
+    return 0;
+}
+void createTree(biTree* T){//创建树
+    static int indix=0;
+    elemtype1 ch=expr[indix++];
+    if(ch=='#'){
+		*T=NULL;
+	}
+	else{
+    *T=(biTree)malloc(sizeof(treeNode));
+    (*T)->data=ch;
+    createTree(&(*T)->ltreeNode);
+    createTree(&(*T)->rtreeNode);
+	}
+}
+queue* queueInit(){//初始化队列
+    queue* q=(queue*)malloc(sizeof(queue));
+    q->data=(elemtype2*)malloc(sizeof(elemtype2)*MAXSIZE);
+    q->front=0;
+    q->rear=0;
+    return q;
+}
+int queueSize(queue* q){//测量队列长度
+    return (q->rear-q->front+MAXSIZE)%MAXSIZE;
+}
+int equeue(queue* q,elemtype2 t){//入队
+    if(queueSize(q)==MAXSIZE-1)return 0;
+    q->data[q->rear]=t;
+    q->rear=(q->rear+1)%MAXSIZE;
+    return 1;
+}
+int dequeue(queue* q,elemtype2* t){//出队
+    if(!queueSize(q))return 0;
+    *t=q->data[q->front];
+    q->front=(q->front+1)%MAXSIZE;
+    return 1;
+}
+int levelOrder(biTree T){//层序遍历，返回MAXDepth
+    queue* q=queueInit();
+	int MAXDepth=0;
+	if(T==NULL)return 0;
+    
+    
+    equeue(q,T);
+    while(queueSize(q)){
+        int count=queueSize(q);
+        while(count){
+            elemtype2 current;
+            dequeue(q,&current);
+            printf("%c ",current->data);
+            if(current->ltreeNode!=NULL){
+                equeue(q,current->ltreeNode);
+            }
+            if(current->rtreeNode!=NULL){
+                equeue(q,current->rtreeNode);
+            }
+            count--;
+        }
+        MAXDepth++;
+    }
+
+    return MAXDepth;
+}
