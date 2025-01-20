@@ -1,0 +1,135 @@
+#include<stdio.h>
+#include<stdlib.h>
+#define MAXSIZE 100
+typedef char vertexType;
+typedef int edgeType;
+typedef struct{
+	vertexType vertex[MAXSIZE];
+	edgeType edge[MAXSIZE][MAXSIZE];
+	int vertexNUM;
+	int edgeNUM;
+}graph;
+
+typedef int elemtype;
+typedef struct queue{
+	elemtype* data;
+	int front;
+	int rear;
+}queue;
+
+int visited[MAXSIZE];
+
+void createGraph(graph* T);
+queue* queueInit();
+int queueSize(queue* Q);
+int enQueue(queue* Q,elemtype a);
+int deQueue(queue* Q,elemtype* a);
+void bfs(graph G);
+
+int main(){
+	graph G;
+	int i;
+	createGraph(&G);
+	for(i=0;i<G.vertexNUM;i++){
+		visited[i]=0;
+	}
+	bfs(G);
+	printf("\n");
+
+
+	return 0;
+}
+void createGraph(graph* T){
+	int i=0;
+	int j=0;
+	T->vertexNUM=9;
+	T->edgeNUM=15;
+	T->vertex[0]='A';
+	T->vertex[1]='B';
+	T->vertex[2]='C';
+	T->vertex[3]='D';
+	T->vertex[4]='E';
+	T->vertex[5]='F';
+	T->vertex[6]='G';
+	T->vertex[7]='H';
+	T->vertex[8]='I';
+
+	for(i=0;i<9;i++){
+		for(j=0;j<9;j++){
+			T->edge[i][j]=0;
+		}
+	}
+
+	T->edge[0][1]=1;
+	T->edge[0][5]=1;
+
+	T->edge[1][2]=1;
+	T->edge[1][6]=1;
+	T->edge[1][8]=1;
+
+	T->edge[2][3]=1;
+	T->edge[2][8]=1;
+
+	T->edge[3][4]=1;
+	T->edge[3][6]=1;
+	T->edge[3][7]=1;
+	T->edge[3][8]=1;
+
+	T->edge[4][5]=1;
+	T->edge[4][7]=1;
+
+	T->edge[5][6]=1;
+
+	T->edge[6][7]=1;
+
+	for(i=0;i<9;i++){
+		for(j=0;j<i;j++){
+			T->edge[i][j]=T->edge[j][i];
+		}
+	}
+
+}
+queue* queueInit(){
+	queue* Q=(queue*)malloc(sizeof(queue));
+	Q->data=(elemtype*)malloc(sizeof(elemtype)*MAXSIZE);
+	Q->front=0;
+	Q->rear=0;
+	return Q;
+}
+int queueSize(queue* Q){
+	return (Q->rear-Q->front+MAXSIZE)%MAXSIZE;
+}
+int enQueue(queue* Q,elemtype a){//入队
+	if(queueSize(Q) == MAXSIZE-1){
+		return 0;
+	}
+	Q->data[Q->rear]=a;
+	Q->rear=(Q->rear+1)%MAXSIZE;
+	return 1;
+}
+int deQueue(queue* Q,elemtype* a){//出队
+	if(!queueSize(Q)){
+		return 0;
+	}
+	*a=Q->data[Q->front];
+	Q->front++;
+	return 1;
+}
+void bfs(graph G){
+	queue* Q=queueInit();
+	int i=0;
+	visited[i]=1;
+	printf("%c ",G.vertex[i]);
+	enQueue(Q,i);
+	while(queueSize(Q)){
+		int j;
+		deQueue(Q,&i);
+		for(j=0;j<G.vertexNUM;j++){
+			if(G.edge[i][j]&&!visited[j]){
+				visited[j]=1;
+				printf("%c ",G.vertex[j]);
+				enQueue(Q,j);
+			}
+		}
+	}
+}
