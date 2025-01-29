@@ -1,0 +1,130 @@
+#include<stdio.h>
+#include<stdlib.h>
+#define MAXSIZE 100
+#define MAX 666666
+typedef char vertexType;
+typedef int arcType;
+typedef struct{
+	vertexType vertex[MAXSIZE];
+	arcType arc[MAXSIZE][MAXSIZE];
+	int vertexNUM;
+	int edgeNUM;
+}Mgraph;
+typedef int Patharc[MAXSIZE][MAXSIZE];
+typedef int ShortPathTable[MAXSIZE][MAXSIZE];
+void createGraph(Mgraph* G);
+void Floyd(Mgraph G,Patharc* P,ShortPathTable* D);
+int main(){
+	int v,w,k;
+	Mgraph G;
+	Patharc P;
+	ShortPathTable D;
+	createGraph(&G);
+	Floyd(G,&P,&D);
+
+	printf("各顶点间最短路径如下：\n");
+	for(v=0;v<G.vertexNUM;v++){
+		for(w=v+1;w<G.vertexNUM;w++){
+			printf("%c-%c  weight:%d  ",G.vertex[v],G.vertex[w],D[v][w]);
+			k=P[v][w];
+			printf("path:%c",G.vertex[v]);
+			while(k!=w){
+				printf(" ->%c",G.vertex[k]);
+				k=P[k][w];
+			}
+			printf(" ->%c",G.vertex[w]);
+			printf("\n");
+		}
+		printf("\n");
+	}
+
+	printf("图表D:\n");
+	for(v=0;v<G.vertexNUM;v++){
+		for(w=0;w<G.vertexNUM;w++){
+			printf("%d\t",D[v][w]);
+		}
+		printf("\n");
+	}
+
+	printf("图表P:\n");
+	for(v=0;v<G.vertexNUM;v++){
+		for(w=0;w<G.vertexNUM;w++){
+			printf("%d\t",P[v][w]);
+		}
+		printf("\n");
+	}
+
+	return 0;
+}
+void createGraph(Mgraph* G){
+	int i,j;
+	G->vertexNUM=9;
+	G->edgeNUM=16;
+	G->vertex[0]='A';
+	G->vertex[1]='B';
+	G->vertex[2]='C';
+	G->vertex[3]='D';
+	G->vertex[4]='E';
+	G->vertex[5]='F';
+	G->vertex[6]='G';
+	G->vertex[7]='H';
+	G->vertex[8]='I';
+	for(i=0;i<9;i++){
+		for(j=0;j<9;j++){
+			if(i==j){
+				G->arc[i][j]=0;
+			}
+			else{
+				G->arc[i][j]=MAX;
+			}
+		}
+	}
+	//A-B A-C
+	G->arc[0][1]=1;
+	G->arc[0][2]=5;
+	//B-C B-D B-E
+	G->arc[1][2]=3;
+	G->arc[1][3]=7;
+	G->arc[1][4]=5;
+	//C-E C-F
+	G->arc[2][4]=1;
+	G->arc[2][5]=7;
+	//D-E D-G
+	G->arc[3][4]=2;
+	G->arc[3][6]=3;
+	//E-F E-G E-H
+	G->arc[4][5]=3;
+	G->arc[4][6]=6;
+	G->arc[4][7]=9;
+	//F-H
+	G->arc[5][7]=5;
+	//G-H G-I
+	G->arc[6][7]=2;
+	G->arc[6][8]=7;
+	//H-I
+	G->arc[7][8]=4;
+	for(i=0;i<9;i++){
+		for(j=0;j<i;j++){
+			G->arc[i][j]=G->arc[j][i];
+		}
+	}
+}
+void Floyd(Mgraph G,Patharc* P,ShortPathTable* D){
+	int v,w,k;
+	for(v=0;v<G.vertexNUM;v++){
+		for(w=0;w<G.vertexNUM;w++){
+			(*D)[v][w]=G.arc[v][w];
+			(*P)[v][w]=w;
+		}
+	}
+	for(k=0;k<G.vertexNUM;k++){
+		for(v=0;v<G.vertexNUM;v++){
+			for(w=0;w<G.vertexNUM;w++){
+				if((*D)[v][w]>(*D)[v][k]+(*D)[k][w]){
+					(*D)[v][w]=(*D)[v][k]+(*D)[k][w];
+					(*P)[v][w]=(*P)[v][k];
+				}
+			}
+		}
+	}
+}
