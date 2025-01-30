@@ -1,0 +1,209 @@
+#include<stdio.h>
+#include<stdlib.h>
+#define OK 1
+#define ERROR 0
+#define MAXSIZE 100
+#define MAX 666666
+typedef int Status;
+typedef struct{
+	int vertex[MAXSIZE];
+	int arc[MAXSIZE][MAXSIZE];
+	int vertexNUM,edgeNUM;
+}MGraph;
+
+typedef struct EdgeNode EdgeNode;
+struct EdgeNode{
+	int adjvex;
+	int weight;
+	EdgeNode* next;
+};
+typedef struct vertexNode{
+	int in;
+	int data;
+	EdgeNode* firstedge;
+}vertexNode,AdjList[MAXSIZE];
+typedef struct{
+	AdjList adjlist;
+	int numvertex,numedge;
+}graphAdjList,*GraphAdjList;
+
+int *etv,*ltv;
+int top2;
+int* stack2;
+
+void createMGraph(MGraph* G);
+void createALGraph(MGraph G,GraphAdjList* GL);
+Status TopologicalSort(GraphAdjList GL);
+void CriticalPath(GraphAdjList GL);
+int main(){
+	MGraph G;
+	GraphAdjList GL;
+	Status result;
+	createMGraph(&G);
+	createALGraph(G,&GL);
+	/*result=TopologicalSort(GL);
+	printf("result: %d\n",result);*/
+	CriticalPath(GL);
+
+
+	return 0;
+}
+void createMGraph(MGraph* G){
+	int i,j;
+	G->vertexNUM=10;
+	G->edgeNUM=13;
+	for(i=0;i<10;i++){
+		G->vertex[i]=i;
+	}
+	for(i=0;i<10;i++){
+		for(j=0;j<10;j++){
+			if(i==j){
+				G->arc[i][j]=0;
+			}
+			else{
+				G->arc[i][j]=MAX;
+			}
+		}
+	}
+
+	G->arc[0][1]=3;
+	G->arc[0][2]=4;
+
+	G->arc[1][3]=5;
+	G->arc[1][4]=6;
+
+	G->arc[2][3]=8;
+	G->arc[2][5]=7;
+
+	G->arc[3][4]=3;
+
+	G->arc[4][6]=9;
+	G->arc[4][7]=4;
+
+	G->arc[5][7]=6;
+
+	G->arc[6][9]=2;
+
+	G->arc[7][8]=5;
+
+	G->arc[8][9]=3;
+}
+void createALGraph(MGraph G,GraphAdjList* GL){
+	int i,j;
+	EdgeNode* E;
+	*GL=(GraphAdjList)malloc(sizeof(graphAdjList));
+	(*GL)->numvertex=G.vertexNUM;
+	(*GL)->numedge=G.edgeNUM;
+	for(i=0;i<G.vertexNUM;i++){
+		(*GL)->adjlist[i].in=0;
+		(*GL)->adjlist[i].data=G.vertex[i];
+		(*GL)->adjlist[i].firstedge=NULL;
+	}
+	for(i=0;i<G.vertexNUM;i++){
+		for(j=0;j<G.vertexNUM;j++){
+			if(G.arc[i][j]&&G.arc[i][j]<MAX){
+				E=(EdgeNode*)malloc(sizeof(EdgeNode));
+				E->adjvex=j;
+				E->weight=G.arc[i][j];
+				E->next=(*GL)->adjlist[i].firstedge;
+				(*GL)->adjlist[i].firstedge=E;
+				(*GL)->adjlist[j].in++;
+			}
+		}
+	}
+}
+Status TopologicalSort(GraphAdjList GL){
+	EdgeNode* E;
+	int i,j,gettop;
+	int top=0;
+	int count=0;
+	int* stack=(int*)malloc(sizeof(int)*MAXSIZE);
+	for(i=0;i<GL->numvertex;i++){
+		if(!GL->adjlist[i].in){
+			stack[++top]=i;
+		}
+	}
+
+	top2=0;
+	etv=(int*)malloc(sizeof(int)*GL->numvertex);
+	for(i=0;i<GL->numvertex;i++){
+		etv[i]=0;
+	}
+	stack2=(int*)malloc(sizeof(int)*GL->numvertex);
+
+	printf("TopologicalSort:\t");
+	while(top){
+		gettop=stack[top--];
+		printf("%d -> ",GL->adjlist[gettop].data);
+		count++;
+		stack2[++top2]=gettop;
+
+		E=GL->adjlist[gettop].firstedge;
+		while(E!=NULL){
+			j=E->adjvex;
+			
+			if(!(--GL->adjlist[j].in)){
+				stack[++top]=j;
+			}
+
+			if((etv[gettop]+E->weight)>etv[j]){
+				etv[j]=etv[gettop]+E->weight;
+			}
+			E=E->next;
+		}
+	}
+	printf("\n");
+	if(count<GL->numvertex){
+		return ERROR;
+	}
+	else{
+		return OK;
+	}
+}
+void CriticalPath(GraphAdjList GL){
+	EdgeNode* E;
+	int i,j,k,gettop;
+	int ete,lte;
+	TopologicalSort(GL);
+	ltv=(int*)malloc(sizeof(int)*GL->numvertex);
+	for(i=0;i<GL->numvertex;i++){
+		ltv[i]=etv[GL->numvertex-1];
+	}
+
+	printf("etv: ");
+	for(i=0;i<GL->numvertex;i++){
+		printf("%d ",etv[i]);
+	}
+	printf("\n");
+
+	while(top2!=0){
+		gettop=stack2[top2--];
+		E=GL->adjlist[gettop].firstedge;
+		while(E!=NULL){
+			j=E->adjvex;
+			if((ltv[j]-E->weight)<ltv[gettop]){
+				ltv[gettop]=ltv[j]-E->weight;
+			}
+			E=E->next;
+		}
+	}
+
+	printf("ltv: ");
+	for(i=0;i<GL->numvertex;i++){
+		printf("%d ",ltv[i]);
+	}
+	printf("\n");
+
+	for(i=0;i<GL->numvertex;i++){
+		E=GL->adjlist[i].firstedge;
+		while(E!=NULL){
+			j=E->adjvex;
+			ete=etv[i];
+			lte=ltv[j]-E->weight;
+			if(ete==lte){
+				printf(" <%d - %d> weight: %d\n",GL->adjlist[i].data,GL->adjlist[j].data,E->weight);
+			}
+			E=E->next;
+		}
+	}
+}
